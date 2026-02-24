@@ -1,0 +1,28 @@
+[project]
+name = "python-db-mcp"
+version = "0.1.0"
+description = "Universal Database MCP Server in Python"
+readme = "README.md"
+requires-python = ">=3.9"
+dependencies = [
+    "mcp[cli]>=1.0.0",
+    "fastapi>=0.109.0",
+    "uvicorn>=0.27.0",
+    "pydantic>=2.6.0",
+    "pydantic-settings>=2.1.0",
+    "typer>=0.9.0",
+    "aiosqlite>=0.19.0",
+    "asyncmy>=0.2.9",
+    "asyncpg>=0.29.0",
+    "redis>=5.0.1",
+    "sse-starlette>=1.8.0",
+    "python-dotenv>=1.0.1",
+    "nanoid>=2.0.0"
+]
+
+[project.scripts]
+python-db-mcp = "python_db_mcp.main:app"
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
