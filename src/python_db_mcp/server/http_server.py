@@ -1,9 +1,12 @@
-from fastapi import FastAPI, HTTPException, Header, Body, Depends
-from typing import Optional, List
+from fastapi import FastAPI, HTTPException, Header, Body, Depends, Request
+from typing import Optional, List, Dict, Any
 from pydantic import BaseModel
 from contextlib import asynccontextmanager
+from sse_starlette.sse import EventSourceResponse
 import uvicorn
 import os
+import json
+import asyncio
 
 from ..core.connection_manager import ConnectionManager
 from ..adapters.base import DbConfig
@@ -65,49 +68,73 @@ async def disconnect(request: DisconnectRequest):
     except Exception as e:
         return {"success": False, "error": str(e)}
 
-from fastapi import FastAPI, HTTPException, Header, Body, Depends, Request
-from sse_starlette.sse import EventSourceResponse
-import json
-import asyncio
+@app.get("/api/tables", dependencies=[Depends(verify_api_key)])
+async def list_tables(sessionId: str):
+    try:
+        service = connection_manager.get_service(sessionId)
+        tables = await service.list_tables()
+        return {"success": True, "data": {"tables": tables}}
+    except Exception as e:
+        return {"success": False, "error": str(e)}
 
-# ... (existing imports)
+@app.get("/api/schema", dependencies=[Depends(verify_api_key)])
+async def get_schema(sessionId: str):
+    try:
+        service = connection_manager.get_service(sessionId)
+        schema = await service.get_schema()
+        return {"success": True, "data": schema.dict(by_alias=True)}
+    except Exception as e:
+        return {"success": False, "error": str(e)}
 
-# Add to imports
-from mcp.server.sse import SseServerTransport
-from ..server.mcp_server import DatabaseMCPServer
+@app.get("/api/schema/{table}", dependencies=[Depends(verify_api_key)])
+async def get_table_info(table: str, sessionId: str):
+    try:
+        service = connection_manager.get_service(sessionId)
+        table_info = await service.get_table_info(table)
+        return {"success": True, "data": table_info.dict(by_alias=True)}
+    except Exception as e:
+        return {"success": False, "error": str(e)}
 
-# ... (existing code)
+@app.get("/api/enum-values", dependencies=[Depends(verify_api_key)])
+async def get_enum_values(sessionId: str, table: str, column: str, limit: int = 100):
+    try:
+        service = connection_manager.get_service(sessionId)
+        values = await service.get_enum_values(table, column)
+        return {"success": True, "data": {"values": values}}
+    except Exception as e:
+        return {"success": False, "error": str(e)}
+
+@app.get("/api/sample-data", dependencies=[Depends(verify_api_key)])
+async def get_sample_data(sessionId: str, table: str, limit: int = 5):
+    try:
+        service = connection_manager.get_service(sessionId)
+        rows = await service.get_sample_data(table, limit)
+        return {"success": True, "data": {"rows": rows}}
+    except Exception as e:
+        return {"success": False, "error": str(e)}
 
 @app.get("/sse")
 async def handle_sse(request: Request):
     """
     Handle SSE connection for MCP protocol.
-    Query params should contain db config.
     """
-    params = dict(request.query_params)
-    
-    # Extract DB config from params
-    # This is a simplified version; in production, you'd map params to DbConfig
-    # and create a dedicated MCP server instance for this session.
-    
-    # For now, we return a placeholder to indicate where the SSE logic goes.
-    # In a full implementation, you would:
-    # 1. Create a DbConfig from params
-    # 2. Instantiate DatabaseMCPServer(config)
-    # 3. Create SseServerTransport
-    # 4. Connect them
-    
+    # Simplified placeholder for SSE logic
     async def event_generator():
         yield {"event": "message", "data": json.dumps({"jsonrpc": "2.0", "method": "connection_established"})}
         while True:
-            await asyncio.sleep(1)
-            # Yield keepalive or actual messages from the MCP server
+            await asyncio.sleep(15)
+            yield {"event": "ping", "data": ""}
             
     return EventSourceResponse(event_generator())
 
 @app.post("/sse/message")
 async def handle_sse_message(request: Request):
-    # Handle incoming JSON-RPC messages from the client
-    pass
+    # Placeholder for handling incoming JSON-RPC messages
+    return {"status": "ok"}
 
-# ... (existing start_http_server)
+def start_http_server(host: str, port: int):
+    """
+    Start the FastAPI server using uvicorn.
+    """
+    print(f"🌐 Starting HTTP API server on {host}:{port}")
+    uvicorn.run(app, host=host, port=port)

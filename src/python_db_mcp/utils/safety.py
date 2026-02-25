@@ -67,11 +67,8 @@ def validate_query(query: str, config: DbConfig) -> None:
             'ddl': 'DDL(ddl)',
         }
         raise ValueError(
-            f"❌ Operation refused: Current permissions do not allow {detected['keyword']} operations.
-"
-            f"Required permission: {labels.get(detected['type'], detected['type'])}
-"
-            f"Current permissions: {', '.join(permissions)}
-"
+            f"❌ Operation refused: Current permissions do not allow {detected['keyword']} operations."
+            f"Required permission: {labels.get(detected['type'], detected['type'])}"
+            f"Current permissions: {', '.join(permissions)}"
             "To enable, check your --permission-mode or --permissions configuration."
         )

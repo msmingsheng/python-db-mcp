@@ -1,5 +1,5 @@
 import time
-from typing import Optional, List
+from typing import Optional, List, Dict, Any
 from ..adapters.base import DbAdapter, DbConfig, QueryResult, SchemaInfo, TableInfo
 from ..utils.safety import validate_query
 from ..utils.schema import SchemaEnhancer
