@@ -26,7 +26,38 @@ python-db-mcp --type mysql --host localhost --port 3306 --user root --password s
 ### HTTP Mode
 
 ```bash
-python-db-mcp --mode http --http-port 3000
+python-db-mcp --mode http --port 3000
+```
+
+### SQLite Example (Quick Start)
+
+1. Create a mock database:
+```python
+import sqlite3
+conn = sqlite3.connect('test.db')
+conn.execute('CREATE TABLE users (id INTEGER PRIMARY KEY, name TEXT)')
+conn.execute('INSERT INTO users (name) VALUES ("Alice"), ("Bob")')
+conn.commit()
+```
+
+2. Start the server:
+```bash
+python-db-mcp start --type sqlite --file-path test.db
+```
+
+## OpenAI Integration
+
+See `example.py` for a complete example of using this server with the OpenAI SDK as a tool.
+
+1. Start server in HTTP mode:
+```bash
+python-db-mcp start --mode http --port 3000
+```
+
+2. Run example:
+```bash
+export OPENAI_API_KEY=your_key
+python example.py
 ```
 
 ## Configuration
