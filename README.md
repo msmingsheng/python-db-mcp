@@ -45,6 +45,27 @@ conn.commit()
 python-db-mcp start --type sqlite --file-path test.db
 ```
 
+## Docker Usage
+
+### Build the Image
+```bash
+docker build -t python-db-mcp ./python-db-mcp
+```
+
+### Run with SQLite
+To use SQLite with Docker, you need to mount the directory containing your database file:
+```bash
+docker run -p 3000:3000 \
+  -v $(pwd):/data \
+  python-db-mcp --type sqlite --file-path /data/test.db
+```
+
+### Run with Remote DB (MySQL/Postgres)
+```bash
+docker run -p 3000:3000 \
+  python-db-mcp --type mysql --host host.docker.internal --user root --database mydb
+```
+
 ## OpenAI Integration
 
 See `example.py` for a complete example of using this server with the OpenAI SDK as a tool.
